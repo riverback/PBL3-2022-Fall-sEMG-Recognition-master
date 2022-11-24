@@ -66,7 +66,7 @@ def validation(model, dataloader, loss_f, acc_computer, device):
     
     return val_loss, acc
 
-def test(model, dataloader, loss_f, acc_computer, device, weights_path):
+def test(model, dataloader, loss_f, acc_computer, acc_computer_none, device, weights_path):
     
     model.load_state_dict(torch.load(weights_path))
     
@@ -84,10 +84,12 @@ def test(model, dataloader, loss_f, acc_computer, device, weights_path):
         
         test_loss += loss_f(output, labels).cpu().item()
         acc = acc_computer(output, labels)
+        acc_ = acc_computer_none(output, labels)
         
+    acc_ = acc_computer_none.compute().cpu()
+    print(acc_)
     acc = acc_computer.compute().cpu().item()
-    
-    print('\nTest: Loss[{:.04f}] Acc[{:.04f}]'.format(test_loss, acc))
+    print('Test: Loss[{:.04f}] Acc[{:.04f}]'.format(test_loss, acc))
     
     return test_loss, acc
 
@@ -99,10 +101,10 @@ def pipeline(num_epochs, device_idx, experiment_tag):
     os.environ['CUDA_VISIBLE_DEVICES'] = device_idx
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    model = Multi_View_CNN(16, 4).to(device)
+    model = Multi_View_CNN(16, 11).to(device)
     
     acc_computer = Accuracy().to(device)
-    
+    acc_computer_none = Accuracy(num_classes=11, average=None).to(device)
     lr = 1e-3
     
     optimizer = Adam(model.parameters(), lr)
@@ -142,9 +144,13 @@ def pipeline(num_epochs, device_idx, experiment_tag):
             best_acc = val_acc
             best_epoch = epoch
         
-        epoch += 1
+        test_loss, test_acc = test(model, test_loader, loss_f, acc_computer, acc_computer_none, device, weights_path=os.path.join(os.path.join('experiments', experiment_tag, 'epoch_{:03d}.pt'.format(best_epoch))))
         
-    test_loss, test_acc = test(model, test_loader, loss_f, acc_computer, device, weights_path=os.path.join(os.path.join('experiments', experiment_tag, 'epoch_{:03d}.pt'.format(best_epoch))))
+        epoch += 1
+    
+        
+    test_loss, test_acc = test(model, test_loader, loss_f, acc_computer, acc_computer_none, device, weights_path=os.path.join(os.path.join('experiments', experiment_tag, 'epoch_{:03d}.pt'.format(best_epoch))))    
+    
     
     # plot curve
     fig, ax = plt.subplots()
@@ -170,9 +176,9 @@ def pipeline(num_epochs, device_idx, experiment_tag):
     ax.legend()
     plt.savefig(os.path.join('experiments', experiment_tag, 'acc.png'))
     
-    
+
 if __name__ == '__main__':
     
-    pipeline(100, "0", "train100epoch")
+    pipeline(600, "0", "600epoch-100-overla0.3")
 
     print()

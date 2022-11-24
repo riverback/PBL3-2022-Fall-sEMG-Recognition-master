@@ -38,7 +38,7 @@ def data_wrangling(csvfile, N_channel):
     # 去除数据开始的某些异常值 (过大值)
     Channels = df.columns.values[1:]
     for channel in Channels:
-        df.drop(df[df[channel]>1.5e30].index, inplace=True) # 删除某通道某时刻值异常的行
+        df.drop(df[df[channel]>5000].index, inplace=True) # 删除某通道某时刻值异常的行
     #df.plot(x='Time(/μs)', y=Channels)
     df.plot(y=Channels)
     plt.savefig('{}/{}.png'.format(parent_folder, file_name))
@@ -47,9 +47,9 @@ def data_wrangling(csvfile, N_channel):
 if __name__ == '__main__':
     # txt2csv
     
-    csv_folder = 'slice_data'
-    '''for file in os.listdir('data'):
-        txt2csv(os.path.join('data', file), csv_folder)'''
+    csv_folder = r'csv_data'
+    for file in os.listdir(r'ywh_txt_data'):
+        txt2csv(os.path.join(r'ywh_txt_data', file), csv_folder)
     
     for file in os.listdir(csv_folder):
         if os.path.splitext(file)[-1] == '.csv':

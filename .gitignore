@@ -118,4 +118,7 @@ Data/*
 
 # weights
 *.pt
-
+*.txt
+*.csv
+*.png
+*.DS*

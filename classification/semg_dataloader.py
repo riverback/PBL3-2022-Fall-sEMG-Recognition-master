@@ -46,6 +46,7 @@ class sEMG_Dataset(Dataset):
         
     def __getitem__(self, index):
         data = torch.tensor(self.datas[index], dtype=torch.float).unsqueeze(dim=0)
+        data = self._scale_data(data)
         label = torch.tensor(self.labels[index], dtype=torch.long)
         
         return (data, label)
@@ -78,6 +79,9 @@ class sEMG_Dataset(Dataset):
             labels += folder_data[1]
         
         return datas, labels
+    
+    def _scale_data(self, data: torch.Tensor):
+        return data / data.max()
     
 def get_loader(dataroot, batch_size, mode='train', num_workers=0):
     if mode == 'train':

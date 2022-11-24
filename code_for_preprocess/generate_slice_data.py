@@ -10,12 +10,15 @@
 '''
 
 import os
+import random
 import numpy as np
 import pandas as pd
 
 
 def generate_slice(csvfile, start, N_Channels, signal_label, interval=100, overlap=0.5):
 
+    data_split = ['train', 'train', 'train', 'train', 'train', 'train', 'val', 'val', 'test', 'test']
+    
     parent_folder, file_name = os.path.split(csvfile)
     file_name, ext = os.path.splitext(file_name)
 
@@ -35,18 +38,20 @@ def generate_slice(csvfile, start, N_Channels, signal_label, interval=100, overl
 
     signal_i, nonsignal_i = 0, 0
     while start+interval < rows:
+        split_index = random.randint(0,9)
         emg_slice = csv_data.iloc[start:start+interval]
         if isaction(emg_slice, Channels_mean, N_Channels):
-            save_path = os.path.join(r'processed_data\slice_data', '{:02d}'.format(signal_label), '{}-{:03d}.csv'.format(file_name, signal_i))
+            save_path = os.path.join('processed_data', '{}'.format(data_split[split_index]), '{:02d}'.format(signal_label), '{}-{:03d}.csv'.format(file_name, signal_i))
             emg_slice.to_csv(save_path, header=None)
             signal_i += 1
-        else:
-            save_path = os.path.join(r'processed_data\slice_data', '{:02d}'.format(0), '{}-{:03d}.csv'.format(file_name, nonsignal_i))
+        elif random.random() > 0.6:
+            save_path = os.path.join('processed_data', '{}'.format(data_split[split_index]), '{:02d}'.format(0), '{}-{:03d}.csv'.format(file_name, signal_i))
             emg_slice.to_csv(save_path, header=None)
             nonsignal_i += 1
         start = int(start + interval*(1-overlap))
 
 if __name__ == '__main__':
     N_channels = 4
-    generate_slice(csvfile=r'processed_data\raw_data\前凹2.csv', start=75, N_Channels=N_channels, signal_label=2, interval=100, overlap=0.5)
+    generate_slice(csvfile=r'csv_data\食指-2.csv', start=75, N_Channels=N_channels, 
+                   signal_label=10, interval=100, overlap=0.3)
 
